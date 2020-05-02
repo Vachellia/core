@@ -1,5 +1,5 @@
 # Vachellia core
-<img src="assets/icons/Vachellia_core.png" width="200">
+<img src="assets/icons/vachellia_core.png" width="200">
 
 The Vachellia core is a functional APIs library. The library is a set of files responsible for the construction and processing of requests, interfacing of a database, basic crud operations and relation of requests objects.
 
