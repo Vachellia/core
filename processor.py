@@ -1,7 +1,7 @@
 import re
 import json
 import base64
-from internal import Internal, get_internal_methods
+from core.internal import Internal, get_internal_methods
 
 
 class Processor(object):
@@ -41,12 +41,15 @@ class Processor(object):
                                 self.database_definition.get_default()
                             )
                             new_procedure_call.define_method(current_procedure_call[3])
-                            new_procedure_call.define_attribute(current_procedure_call[4])
+                            new_procedure_call.define_attribute(
+                                current_procedure_call[4]
+                            )
                             new_procedure_call.define_request_object(current_request)
                             current_request.add_procedure_call(new_procedure_call)
             return current_request
         except Exception as error:
             raise Exception(f"Process_request method error: {error}")
+
 
 class Request(object):
     def __init__(self, id):
