@@ -27,7 +27,7 @@ class RemoteClass(object):
         if methodname == "getattr":
             for procedure_call in self.request.get_procedure_call_list():
                 if procedure_call[1] == params[0]:
-                    return procedure_call[4]
+                    return procedure_call[5]
         else:
             return self.append_procedure_call(
                  [str(uuid.uuid1()), self.class_id, methodname, "method", list(params), None]
@@ -106,7 +106,7 @@ class RequestManager:
                             request_response["procedure_calls"]
                         ):
                             unresolved_request.set_procedure_call_value(
-                                index, request_response["procedure_calls"][index][0]
+                                index, request_response["procedure_calls"][index][1]
                             )
                         return {
                             "request_id": request_response["request_id"],
