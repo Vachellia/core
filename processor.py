@@ -2,6 +2,7 @@ import re
 import json
 import base64
 from core.internal import Internal, get_internal_methods
+from termcolor import colored
 
 
 class Processor(object):
@@ -17,18 +18,20 @@ class Processor(object):
     def process_request(self, raw_data):
         try:
             request_data = json.loads(base64.b64decode(raw_data))
-            print(f'[🌿][request_data] -> {request_data["request_id"]}')
+            print(
+                f'[{colored("OK", "green")}][request_data] -> {request_data["request_id"]}'
+            )
             current_request = Request(request_data["request_id"])
 
             for current_procedure_call in request_data["procedure_calls"]:
                 for component in self.component_definition:
-                    class_name = re.search("[.](.*)'>", current_procedure_call[0])
+                    class_name = re.search("[.](.*)'>", current_procedure_call[1])
                     if component["name"] == class_name.group(1):
                         new_procedure_call = Procedure_call(
-                            current_procedure_call[1], current_procedure_call[2]
+                            current_procedure_call[2], current_procedure_call[3]
                         )
                         class_id = re.search(
-                            "<class at '(.*)[.]", current_procedure_call[0]
+                            "<class at '(.*)[.]", current_procedure_call[1]
                         )
                         if class_id.group(1):
                             class_instance = self.class_manager.get_class_instance(
@@ -40,9 +43,9 @@ class Processor(object):
                             new_procedure_call.define_database(
                                 self.database_definition.get_default()
                             )
-                            new_procedure_call.define_method(current_procedure_call[3])
+                            new_procedure_call.define_method(current_procedure_call[4])
                             new_procedure_call.define_attribute(
-                                current_procedure_call[4]
+                                current_procedure_call[5]
                             )
                             new_procedure_call.define_request_object(current_request)
                             current_request.add_procedure_call(new_procedure_call)
