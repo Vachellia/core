@@ -22,7 +22,7 @@ class RemoteClass(object):
     def __request(self, methodname, params):
         if methodname == "setattr":
             return self.append_procedure_call(
-                [self.class_id, params[0], "attribute", None, params[1]]
+                [str(uuid.uuid1()), self.class_id, params[0], "attribute", None, params[1]]
             )
         if methodname == "getattr":
             for procedure_call in self.request.get_procedure_call_list():
@@ -30,7 +30,7 @@ class RemoteClass(object):
                     return procedure_call[4]
         else:
             return self.append_procedure_call(
-                [self.class_id, methodname, "method", list(params), None]
+                 [str(uuid.uuid1()), self.class_id, methodname, "method", list(params), None]
             )
 
     def append_procedure_call(self, procedure_call):
