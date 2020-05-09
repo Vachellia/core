@@ -28,7 +28,7 @@ class Processor(object):
                     class_name = re.search("[.](.*)'>", current_procedure_call[1])
                     if component["name"] == class_name.group(1):
                         new_procedure_call = Procedure_call(
-                            current_procedure_call[2], current_procedure_call[3]
+                            current_procedure_call[0], current_procedure_call[2], current_procedure_call[3]
                         )
                         class_id = re.search(
                             "<class at '(.*)[.]", current_procedure_call[1]
@@ -80,8 +80,9 @@ class Request(object):
 
 
 class Procedure_call(object):
-    def __init__(self, name, type):
+    def __init__(self, _id, name, type):
         super().__init__()
+        self.id = _id
         self.name = name
         self.type = type
 
@@ -89,7 +90,7 @@ class Procedure_call(object):
         return self.value
 
     def get_procedure_call_object(self):
-        return [self.value]
+        return [self.id, self.value]
 
     def define_class(self, name, instance, _id):
         self.class_name = name
