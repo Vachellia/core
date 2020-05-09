@@ -33,7 +33,7 @@ class RemoteClass(object):
             )
         if methodname == "getattr":
             for procedure_call in self.request.get_procedure_call_list():
-                if procedure_call[1] == params[0]:
+                if procedure_call[2] == params[0]:
                     return procedure_call[5]
         else:
             return self.append_procedure_call(
