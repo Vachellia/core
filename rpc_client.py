@@ -1,5 +1,6 @@
 import uuid
 
+
 class _Method:
     def __init__(self, send, name):
         self.__send = send
@@ -41,8 +42,11 @@ class RemoteClass(object):
 
 
 class Request:
-    def __init__(self):
-        self.__id = str(uuid.uuid1())
+    def __init__(self, _id=None):
+        if _id:
+            self.__id = str(_id)
+        else:
+            self.__id = str(uuid.uuid1())
         self.__procedure_call_list = []
         self.__is_resolver = True
 
@@ -51,7 +55,7 @@ class Request:
 
     def get_procedure_call_list(self):
         return self.__procedure_call_list
-        
+
     def get_is_resolver(self):
         return self.__is_resolver
 
@@ -71,7 +75,7 @@ class Request:
             if request_response:
                 return self.__continue_method(request_response)
             else:
-                # TODO error if request_response not found 
+                # TODO error if request_response not found
                 pass
 
     def add_procedure_call(self, procedure_call):
@@ -85,6 +89,8 @@ class Request:
 
 
 unresolved_request_list = []
+
+
 class RequestManager:
     def __init__(self):
         pass
@@ -102,12 +108,20 @@ class RequestManager:
                             unresolved_request.set_procedure_call_value(
                                 index, request_response["procedure_calls"][index][0]
                             )
-                        return unresolved_request.continue_request()
+                        return {
+                            "request_id": request_response["request_id"],
+                            "procedure_calls": unresolved_request.continue_request(),
+                        }
                 else:
-                    return unresolved_request.continue_request(request_response["procedure_calls"])
+                    return {
+                        "request_id": request_response["request_id"],
+                        "procedure_calls": unresolved_request.continue_request(
+                            request_response["procedure_calls"]
+                        ),
+                    }
 
-    def generate_request(self):
-        return Request()
+    def generate_request(self, _id=None):
+        return Request(_id)
 
     def set_resolver(self, request: Request, continue_method=None):
         if continue_method:

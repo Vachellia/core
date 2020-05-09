@@ -2,6 +2,7 @@ import re
 import json
 import base64
 from core.internal import Internal, get_internal_methods
+from termcolor import colored
 
 
 class Processor(object):
@@ -17,7 +18,9 @@ class Processor(object):
     def process_request(self, raw_data):
         try:
             request_data = json.loads(base64.b64decode(raw_data))
-            print(f'[🌿][request_data] -> {request_data["request_id"]}')
+            print(
+                f'[{colored("OK", "green")}][request_data] -> {request_data["request_id"]}'
+            )
             current_request = Request(request_data["request_id"])
 
             for current_procedure_call in request_data["procedure_calls"]:
