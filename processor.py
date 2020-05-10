@@ -156,7 +156,7 @@ class Procedure_call(object):
             "class_name": class_return["class_name"],
         }
         if "request" in class_return and "continue_method" in class_return:
-            out_data = request_manager.compute_resolve(class_return["request"], class_return["continue_method"])
+            out_data = request_manager.compute_resolve(self.id, class_return["request"], class_return["continue_method"])
             print("[Router][test][remote_request] -> ", out_data)
             if "message_channel" in class_return:
                 cell_1_messager = Messager(class_return["message_host"], class_return["message_channel"])

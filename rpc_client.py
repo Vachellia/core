@@ -70,11 +70,17 @@ class Request:
     def get_procedure_call_list(self):
         return self.__procedure_call_list
 
+    def get_parent_procedure_call_id(self):
+        return self.__parent_procedure_call_id
+
     def get_is_resolver(self):
         return self.__is_resolver
 
     def set_is_resolver(self, is_resolver: bool):
         self.__is_resolver = is_resolver
+
+    def set_parent_procedure_call_id(self, parent_procedure_call_id: str):
+        self.__parent_procedure_call_id = parent_procedure_call_id
 
     def set_procedure_call_value(self, index, value):
         self.__procedure_call_list[index][4] = value
@@ -131,9 +137,9 @@ class RequestManager:
                     }
                 else:
                     return {
-                        "request_id": request_response["request_id"],
+                        "request_id": unresolved_request.get_parent_procedure_call_id(),
                         "procedure_calls": unresolved_request.continue_request(
-                            request_response["procedure_calls"]
+                            request_response
                         ),
                     }
 
@@ -146,7 +152,10 @@ class RequestManager:
         unresolved_request_list.append(request)
         return request.get_dict()
 
-    def compute_resolve(self, request: Request, continue_method):
+    def compute_resolve(
+        self, parent_procedure_call_id: str, request: Request, continue_method
+    ):
+        request.set_parent_procedure_call_id(parent_procedure_call_id)
         request.set_continue(continue_method)
         request.set_is_resolver(False)
         unresolved_request_list.append(request)
