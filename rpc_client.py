@@ -139,7 +139,7 @@ class RequestManager:
                     return {
                         "request_id": unresolved_request.get_parent_procedure_call_id(),
                         "procedure_calls": unresolved_request.continue_request(
-                            request_response
+                            request_response["procedure_calls"]
                         ),
                     }
 
