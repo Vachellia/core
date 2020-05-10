@@ -1,8 +1,12 @@
 import re
+import pika
 import json
 import base64
-from core.internal import Internal, get_internal_methods
 from termcolor import colored
+from core import RequestManager
+from core.internal import Internal, get_internal_methods
+
+request_manager = RequestManager()
 
 
 class Processor(object):
@@ -28,7 +32,9 @@ class Processor(object):
                     class_name = re.search("[.](.*)'>", current_procedure_call[1])
                     if component["name"] == class_name.group(1):
                         new_procedure_call = Procedure_call(
-                            current_procedure_call[0], current_procedure_call[2], current_procedure_call[3]
+                            current_procedure_call[0],
+                            current_procedure_call[2],
+                            current_procedure_call[3],
                         )
                         class_id = re.search(
                             "<class at '(.*)[.]", current_procedure_call[1]
@@ -139,10 +145,22 @@ class Procedure_call(object):
                 internal_class = Internal(
                     self.class_instance, self.database, self.class_name
                 )
-                self.value = getattr(internal_class, self.name)(self.parameters)
-                # print("[Procedure_call][call][value] -> ", self.value)
+                resolve_return(getattr(internal_class, self.name)(self.parameters))
             else:
-                self.value = getattr(self.class_instance, self.name)(self.parameters)
+                resolve_return(getattr(self.class_instance, self.name)(self.parameters))
+
+    def resolve_return(self, class_return):
+        self.value = {
+            "status": class_return["status"],
+            "data": class_return["data"],
+            "class_name": class_return["class_name"],
+        }
+        if "request" in class_return and "continue_method" in class_return:
+            out_data = request_manager.compute_resolve(class_return["request"], class_return["continue_method"])
+            print("[Router][test][remote_request] -> ", out_data)
+            if "message_channel" in class_return:
+                cell_1_messager = Messager(class_return["message_host"], class_return["message_channel"])
+                cell_1_messager.publish(out_data)
         else:
             pointer_value = self.find_by_pointer(self.value)
             if pointer_value:
@@ -163,3 +181,20 @@ class ClassManger(object):
         new_class = {"id": id, "instance": component["class"]()}
         self.__class_list.append(new_class)
         return new_class["instance"]
+
+
+class Messager(object):
+    def __init__(self, host, queue):
+        super().__init__()
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=host)
+        )
+        self.channel = connection.channel()
+        self.queue = queue
+        self.channel.queue_declare(queue=self.queue)
+
+    def publish(self, out_data):
+        base64_out_data = base64.b64encode(json.dumps(out_data).encode())
+        self.channel.basic_publish(
+            exchange="", routing_key=self.queue, body=base64_out_data
+        )
