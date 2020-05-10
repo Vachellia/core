@@ -3,7 +3,7 @@ import pika
 import json
 import base64
 from termcolor import colored
-from core import RequestManager
+from core.rpc_client import RequestManager
 from core.internal import Internal, get_internal_methods
 
 request_manager = RequestManager()
