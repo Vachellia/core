@@ -137,10 +137,10 @@ class RequestManager:
                     }
                 else:
                     return {
-                        "request_id": unresolved_request.get_parent_procedure_call_id(),
-                        "procedure_calls": unresolved_request.continue_request(
+                        "request_id": request_response["request_id"],
+                        "procedure_calls": [unresolved_request.get_parent_procedure_call_id(), unresolved_request.continue_request(
                             request_response["procedure_calls"]
-                        ),
+                        )],
                     }
 
     def generate_request(self, _id=None):
