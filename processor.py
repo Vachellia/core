@@ -145,9 +145,9 @@ class Procedure_call(object):
                 internal_class = Internal(
                     self.class_instance, self.database, self.class_name
                 )
-                resolve_return(getattr(internal_class, self.name)(self.parameters))
+                self.resolve_return(getattr(internal_class, self.name)(self.parameters))
             else:
-                resolve_return(getattr(self.class_instance, self.name)(self.parameters))
+                self.resolve_return(getattr(self.class_instance, self.name)(self.parameters))
 
     def resolve_return(self, class_return):
         self.value = {
@@ -186,7 +186,7 @@ class ClassManger(object):
 class Messager(object):
     def __init__(self, host, queue):
         super().__init__()
-        self.connection = pika.BlockingConnection(
+        connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=host)
         )
         self.channel = connection.channel()
