@@ -1,3 +1,4 @@
+import re
 import uuid
 
 
@@ -32,9 +33,15 @@ class RemoteClass(object):
                 ]
             )
         if methodname == "getattr":
-            for procedure_call in self.request.get_procedure_call_list():
+            procedure_call_list = self.request.get_procedure_call_list()
+            for procedure_call in procedure_call_list:
                 if procedure_call[2] == params[0]:
-                    return procedure_call[5]
+                    pointer_pattern = re.search(
+                        "<pointer at (.*)>", str(procedure_call[5])
+                    )
+                    if pointer_pattern:
+                        if pointer_pattern.group(1):
+                            return procedure_call_list[int(pointer_pattern.group(1))]
         else:
             return self.append_procedure_call(
                 [
@@ -119,16 +126,16 @@ class RequestManager:
         for unresolved_request in unresolved_request_list:
             if request_response["request_id"] == unresolved_request.get_id():
                 if unresolved_request.get_is_resolver():
-                    for index, unresolved_procedure_call in enumerate(
+                    for unresolved_index, unresolved_procedure_call in enumerate(
                         unresolved_request.get_procedure_call_list()
                     ):
-                        for procedure_call in request_response["procedure_calls"]:
-                            # print(f"\n\n{unresolved_procedure_call[3]}\n")
-                            # print(f"{procedure_call[0]}\n\n")
+                        print(f'{request_response["procedure_calls"]}\n\n')
+                        for index, procedure_call in enumerate(request_response["procedure_calls"]):
+                            print(f"\n\n{unresolved_procedure_call[0]}\n")
                             if unresolved_procedure_call[3] == "method":
                                 if unresolved_procedure_call[0] == procedure_call[0]:
                                     unresolved_request.set_procedure_call_value(
-                                        index,
+                                        unresolved_index,
                                         request_response["procedure_calls"][index][1],
                                     )
                     return {
@@ -138,9 +145,12 @@ class RequestManager:
                 else:
                     return {
                         "request_id": request_response["request_id"],
-                        "procedure_calls": [unresolved_request.get_parent_procedure_call_id(), unresolved_request.continue_request(
-                            request_response["procedure_calls"]
-                        )],
+                        "procedure_calls": [[
+                            unresolved_request.get_parent_procedure_call_id(),
+                            unresolved_request.continue_request(
+                                request_response["procedure_calls"]
+                            ),
+                        ]],
                     }
 
     def generate_request(self, _id=None):
