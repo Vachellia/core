@@ -41,7 +41,7 @@ class RemoteClass(object):
                     )
                     if pointer_pattern:
                         if pointer_pattern.group(1):
-                            return procedure_call_list[int(pointer_pattern.group(1))]
+                            return procedure_call_list[int(pointer_pattern.group(1))][5]
         else:
             return self.append_procedure_call(
                 [
@@ -90,7 +90,7 @@ class Request:
         self.__parent_procedure_call_id = parent_procedure_call_id
 
     def set_procedure_call_value(self, index, value):
-        self.__procedure_call_list[index][4] = value
+        self.__procedure_call_list[index][5] = value
 
     def set_continue(self, continue_method):
         self.__continue_method = continue_method
@@ -129,9 +129,9 @@ class RequestManager:
                     for unresolved_index, unresolved_procedure_call in enumerate(
                         unresolved_request.get_procedure_call_list()
                     ):
-                        print(f'{request_response["procedure_calls"]}\n\n')
                         for index, procedure_call in enumerate(request_response["procedure_calls"]):
-                            print(f"\n\n{unresolved_procedure_call[0]}\n")
+                            # print(f"\n\n{unresolved_procedure_call[0]}\n")
+                            # print(f"\n\n{procedure_call[0]}\n")
                             if unresolved_procedure_call[3] == "method":
                                 if unresolved_procedure_call[0] == procedure_call[0]:
                                     unresolved_request.set_procedure_call_value(
