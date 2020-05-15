@@ -41,7 +41,7 @@ class RemoteClass(object):
                     )
                     if pointer_pattern:
                         if pointer_pattern.group(1):
-                            return procedure_call_list[int(pointer_pattern.group(1))]["n"]
+                            return procedure_call_list[int(pointer_pattern.group(1))]["v"]
         else:
             return self.append_procedure_call(
                 {
@@ -146,12 +146,12 @@ class RequestManager:
                     return {
                         "request_id": request_response["request_id"],
                         "procedure_calls": [
-                            [
-                                unresolved_request.get_parent_procedure_call_id(),
-                                unresolved_request.continue_request(
+                            {
+                                "i":unresolved_request.get_parent_procedure_call_id(),
+                                "v":unresolved_request.continue_request(
                                     request_response["procedure_calls"]
                                 ),
-                            ]
+                            }
                         ],
                     }
 
