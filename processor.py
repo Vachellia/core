@@ -29,15 +29,15 @@ class Processor(object):
 
             for current_procedure_call in request_data["procedure_calls"]:
                 for component in self.component_definition:
-                    class_name = re.search("[.](.*)'>", current_procedure_call[1])
+                    class_name = re.search("[.](.*)'>", current_procedure_call["c"])
                     if component["name"] == class_name.group(1):
                         new_procedure_call = Procedure_call(
-                            current_procedure_call[0],
-                            current_procedure_call[2],
-                            current_procedure_call[3],
+                            current_procedure_call["i"],
+                            current_procedure_call["n"],
+                            current_procedure_call["t"],
                         )
                         class_id = re.search(
-                            "<class at '(.*)[.]", current_procedure_call[1]
+                            "<class at '(.*)[.]", current_procedure_call["c"]
                         )
                         if class_id.group(1):
                             class_instance = self.class_manager.get_class_instance(
@@ -49,9 +49,11 @@ class Processor(object):
                             new_procedure_call.define_database(
                                 self.database_definition.get_default()
                             )
-                            new_procedure_call.define_method(current_procedure_call[4])
+                            new_procedure_call.define_method(
+                                current_procedure_call["p"]
+                            )
                             new_procedure_call.define_attribute(
-                                current_procedure_call[5]
+                                current_procedure_call["v"]
                             )
                             new_procedure_call.define_request_object(current_request)
                             current_request.add_procedure_call(new_procedure_call)
@@ -96,7 +98,7 @@ class Procedure_call(object):
         return self.value
 
     def get_procedure_call_object(self):
-        return [self.id, self.value]
+        return {"i": self.id, "v": self.value}
 
     def define_class(self, name, instance, _id):
         self.class_name = name
@@ -147,19 +149,27 @@ class Procedure_call(object):
                 )
                 self.resolve_return(getattr(internal_class, self.name)(self.parameters))
             else:
-                self.resolve_return(getattr(self.class_instance, self.name)(self.parameters))
+                self.resolve_return(
+                    getattr(self.class_instance, self.name)(self.parameters)
+                )
 
     def resolve_return(self, class_return):
-        print(f'[{colored("OK", "green")}][{colored(self.id, "green")}][{self.name}] -> {self.parameters}')
+        print(
+            f'[{colored("OK", "green")}][{colored(self.id, "green")}][{self.name}] -> {self.parameters}'
+        )
         self.value = {
             "status": class_return["status"],
             "data": class_return["data"],
             "class_name": class_return["class_name"],
         }
         if "request" in class_return and "continue_method" in class_return:
-            out_data = request_manager.compute_resolve(self.id, class_return["request"], class_return["continue_method"])
+            out_data = request_manager.compute_resolve(
+                self.id, class_return["request"], class_return["continue_method"]
+            )
             if "message_channel" in class_return:
-                cell_1_messager = Messager(class_return["message_host"], class_return["message_channel"])
+                cell_1_messager = Messager(
+                    class_return["message_host"], class_return["message_channel"]
+                )
                 cell_1_messager.publish(out_data)
         else:
             pointer_value = self.find_by_pointer(self.value)
@@ -186,9 +196,7 @@ class ClassManger(object):
 class Messager(object):
     def __init__(self, host, queue):
         super().__init__()
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=host)
-        )
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
         self.channel = connection.channel()
         self.queue = queue
         self.channel.queue_declare(queue=self.queue)
