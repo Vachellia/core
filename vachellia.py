@@ -55,10 +55,10 @@ class Vachellia(object):
                 for procedure in request.get_procedure_call_objects():
                     procedure.call()
 
-                print(f"[operate_request][get_request] -> {request.get_request()}")
+                # print(f"[operate_request][get_request] -> {request.get_request()}")
                 return base64.b64encode(json.dumps(request.get_request()).encode())
             else:
-                print(f"[operate_request][resolve_return] -> {resolve_return}")
+                # print(f"[operate_request][resolve_return] -> {resolve_return}")
                 return base64.b64encode(json.dumps(resolve_return).encode())
         except Exception as error:
             raise Exception(f"operate_request method error: {error}")

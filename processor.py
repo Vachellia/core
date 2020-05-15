@@ -22,9 +22,9 @@ class Processor(object):
     def process_request(self, raw_data):
         try:
             request_data = json.loads(base64.b64decode(raw_data))
-            print(
-                f'[{colored("OK", "green")}][request_data] -> {request_data["request_id"]}'
-            )
+            # print(
+            #     f'[{colored("OK", "green")}][request_data] -> {request_data["request_id"]}'
+            # )
             current_request = Request(request_data["request_id"])
 
             for current_procedure_call in request_data["procedure_calls"]:
@@ -150,6 +150,7 @@ class Procedure_call(object):
                 self.resolve_return(getattr(self.class_instance, self.name)(self.parameters))
 
     def resolve_return(self, class_return):
+        print(f'[{colored("OK", "green")}][{colored(self.id, "green")}][{self.name}] -> {self.parameters}')
         self.value = {
             "status": class_return["status"],
             "data": class_return["data"],
@@ -157,7 +158,7 @@ class Procedure_call(object):
         }
         if "request" in class_return and "continue_method" in class_return:
             out_data = request_manager.compute_resolve(self.id, class_return["request"], class_return["continue_method"])
-            print("[Router][test][remote_request] -> ", out_data)
+            # print("[Router][test][remote_request] -> ", out_data)
             if "message_channel" in class_return:
                 cell_1_messager = Messager(class_return["message_host"], class_return["message_channel"])
                 cell_1_messager.publish(out_data)

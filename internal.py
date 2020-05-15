@@ -1,5 +1,6 @@
 from bson.objectid import ObjectId
 from core.relator import Relator
+from termcolor import colored
 
 
 class Internal(object):
