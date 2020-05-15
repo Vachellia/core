@@ -150,6 +150,7 @@ class Procedure_call(object):
                 self.resolve_return(getattr(self.class_instance, self.name)(self.parameters))
 
     def resolve_return(self, class_return):
+        print(f'[{colored("OK", "green")}][{colored(self.id, "green")}][{self.name}] -> {self.parameters}')
         self.value = {
             "status": class_return["status"],
             "data": class_return["data"],
