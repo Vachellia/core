@@ -127,9 +127,10 @@ class Procedure_call(object):
         pointer_pattern = re.search("<pointer at (.*)>", str(pointer))
         if pointer_pattern:
             if pointer_pattern.group(1):
-                return self.request_object.get_procedure_call_list_by_index(
-                    int(pointer_pattern.group(1))
-                ).get_value()
+                if isinstance(pointer_pattern.group(1), int):
+                    return self.request_object.get_procedure_call_list_by_index(
+                        int(pointer_pattern.group(1))
+                    ).get_value()
 
     def call(self):
         if self.type == "method":
