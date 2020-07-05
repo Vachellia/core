@@ -39,6 +39,7 @@ class Internal(object):
                 self.database, parameters[1]["class_name"], self.class_instance_name
             )
             relation.get_relationship(parameters[1]["data"])
+            full_result = []
             for relationship_data in parameters[1]["data"]:
                 results_list = []
                 if "--relationship_id--" in relationship_data:
@@ -48,13 +49,14 @@ class Internal(object):
                     for document in results:
                         document["_id"] = str(document["_id"])
                         results_list.append(document)
+                        full_result.append(document)
 
                     del relationship_data["--relationship_id--"]
                     relationship_data[self.class_instance_name] = results_list
 
             return {
                 "status": "success",
-                "data": parameters[1]["data"],
+                "data": full_result,
                 "class_name": self.class_instance_name,
             }
 
