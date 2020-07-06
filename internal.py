@@ -43,13 +43,14 @@ class Internal(object):
             for relationship_data in parameters[1]["data"]:
                 results_list = []
                 if "--relationship_id--" in relationship_data:
-                    results = self.database_collection.find(
-                        {"_id": ObjectId(relationship_data["--relationship_id--"])}
-                    )
-                    for document in results:
-                        document["_id"] = str(document["_id"])
-                        results_list.append(document)
-                        full_result.append(document)
+                    for relationship_id in relationship_data["--relationship_id--"]:
+                        results = self.database_collection.find(
+                            {"_id": ObjectId(relationship_id)}
+                        )
+                        for document in results:
+                            document["_id"] = str(document["_id"])
+                            results_list.append(document)
+                            full_result.append(document)
 
                     del relationship_data["--relationship_id--"]
                     relationship_data[self.class_instance_name] = results_list
@@ -63,16 +64,18 @@ class Internal(object):
     def create(self, parameters):
         if len(parameters) == 1:
             if "_id" in parameters[0]:
-                result = {
-                    "inserted_id": parameters[0]["_id"]
-                }
+                return {
+                    "status": "success",
+                    "data": {"_id": str(parameters[0]["_id"])},
+                    "class_name": self.class_instance_name,
+                } 
             else:
                 result = self.database_collection.insert_one(parameters[0])
-            return {
-                "status": "success",
-                "data": {"_id": str(result.inserted_id)},
-                "class_name": self.class_instance_name,
-            }
+                return {
+                    "status": "success",
+                    "data": {"_id": str(result.inserted_id)},
+                    "class_name": self.class_instance_name,
+                }
         elif len(parameters) == 2:
             relation = Relator(
                 self.database, parameters[1]["class_name"], self.class_instance_name

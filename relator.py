@@ -57,9 +57,10 @@ class Relator(object):
                             f'{self.parent_name}_id': relationship_data["_id"]
                         }
                     )
+                    relationship_data["--relationship_id--"] = []
                     for result in relationship_result:
                         if f'{self.child_name}_id' in result:
-                            relationship_data["--relationship_id--"] = result[f'{self.child_name}_id']
+                            relationship_data["--relationship_id--"].append(result[f'{self.child_name}_id'])
             # print(
             #     f'[get_relationship][relationship_data_list] -> {relationship_data_list}'
             # )
