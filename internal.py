@@ -62,13 +62,17 @@ class Internal(object):
 
     def create(self, parameters):
         if len(parameters) == 1:
-            result = self.database_collection.insert_one(parameters[0])
+            if "_id" in parameters[0]:
+                result = {
+                    "inserted_id": parameters[0]["_id"]
+                }
+            else:
+                result = self.database_collection.insert_one(parameters[0])
             return {
                 "status": "success",
                 "data": {"_id": str(result.inserted_id)},
                 "class_name": self.class_instance_name,
             }
-
         elif len(parameters) == 2:
             relation = Relator(
                 self.database, parameters[1]["class_name"], self.class_instance_name
