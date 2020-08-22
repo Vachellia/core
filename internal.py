@@ -39,34 +39,43 @@ class Internal(object):
                 self.database, parameters[1]["class_name"], self.class_instance_name
             )
             relation.get_relationship(parameters[1]["data"])
+            full_result = []
             for relationship_data in parameters[1]["data"]:
                 results_list = []
                 if "--relationship_id--" in relationship_data:
-                    results = self.database_collection.find(
-                        {"_id": ObjectId(relationship_data["--relationship_id--"])}
-                    )
-                    for document in results:
-                        document["_id"] = str(document["_id"])
-                        results_list.append(document)
+                    for relationship_id in relationship_data["--relationship_id--"]:
+                        results = self.database_collection.find(
+                            {"_id": ObjectId(relationship_id)}
+                        )
+                        for document in results:
+                            document["_id"] = str(document["_id"])
+                            results_list.append(document)
+                            full_result.append(document)
 
                     del relationship_data["--relationship_id--"]
                     relationship_data[self.class_instance_name] = results_list
 
             return {
                 "status": "success",
-                "data": parameters[1]["data"],
+                "data": full_result,
                 "class_name": self.class_instance_name,
             }
 
     def create(self, parameters):
         if len(parameters) == 1:
-            result = self.database_collection.insert_one(parameters[0])
-            return {
-                "status": "success",
-                "data": {"_id": str(result.inserted_id)},
-                "class_name": self.class_instance_name,
-            }
-
+            if "_id" in parameters[0]:
+                return {
+                    "status": "success",
+                    "data": {"_id": str(parameters[0]["_id"])},
+                    "class_name": self.class_instance_name,
+                } 
+            else:
+                result = self.database_collection.insert_one(parameters[0])
+                return {
+                    "status": "success",
+                    "data": {"_id": str(result.inserted_id)},
+                    "class_name": self.class_instance_name,
+                }
         elif len(parameters) == 2:
             relation = Relator(
                 self.database, parameters[1]["class_name"], self.class_instance_name
@@ -142,20 +151,25 @@ class Internal(object):
             relation = Relator(
                 self.database, parameters[1]["class_name"], self.class_instance_name
             )
-            relation.delete_relationship(parameters[1]["data"])
+            if "_id" in parameters[0]:
+                relation.delete_relationship(parameters[1]["data"], parameters[0]["_id"])
+            else:
+                relation.delete_relationship(parameters[1]["data"])
+            print("[relation.delete_relationship] -> ", parameters[1]["data"])
             result_list = []
             for relationship_data in parameters[1]["data"]:
                 if "--relationship_id--" in relationship_data:
-                    if relationship_data["--relationship_id--"] == parameters[0]["_id"]:
-                        result = self.database_collection.delete_one(
-                            {"_id": ObjectId(parameters[0]["_id"])}
-                        )
-                        if result.deleted_count > 0:
-                            result_list.append({"_id": parameters[0]["_id"]})
-                        del relationship_data["--relationship_id--"]
-                    else:
-                        pass
-                        # TODO: allow put on unspecified id
+                    for relationship_id in relationship_data["--relationship_id--"]:
+                        if relationship_id == parameters[0]["_id"]:
+                            result = self.database_collection.delete_one(
+                                {"_id": ObjectId(parameters[0]["_id"])}
+                            )
+                            if result.deleted_count > 0:
+                                result_list.append({"_id": parameters[0]["_id"]})
+                            del relationship_data["--relationship_id--"]
+                        else:
+                            pass
+                            # TODO: allow put on unspecified id
 
             return {
                 "status": "success",
