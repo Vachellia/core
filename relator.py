@@ -2,12 +2,11 @@ from bson.objectid import ObjectId
 
 
 class Relator(object):
-
     def __init__(self, database, parent_name, child_name):
         super().__init__()
         self.parent_name = parent_name
         self.child_name = child_name
-        self.collection = database.get_collection(f'{parent_name}_{child_name}')
+        self.collection = database.get_collection(f"{parent_name}_{child_name}")
 
     def get(self, parameters):
         try:
@@ -32,7 +31,7 @@ class Relator(object):
             _id = parameters["_id"]
             del parameters["_id"]
             result = self.collection.find_one_and_update(
-                {"_id":  ObjectId(_id)}, {"$set": parameters}
+                {"_id": ObjectId(_id)}, {"$set": parameters}
             )
             return {"_id": str(result["_id"])}
         except Exception as error:
@@ -40,11 +39,9 @@ class Relator(object):
 
     def delete(self, parameters):
         try:
-            result = self.collection.delete_one(
-                {"_id":  ObjectId(parameters['_id'])}
-            )
+            result = self.collection.delete_one({"_id": ObjectId(parameters["_id"])})
             if result.deleted_count > 0:
-                return {"_id": parameters['_id']}
+                return {"_id": parameters["_id"]}
         except Exception as error:
             raise Exception(f"delete method error: {error}")
 
@@ -53,32 +50,34 @@ class Relator(object):
             for relationship_data in relationship_data_list:
                 if "_id" in relationship_data:
                     relationship_result = self.get(
-                        {
-                            f'{self.parent_name}_id': relationship_data["_id"]
-                        }
+                        {f"{self.parent_name}_id": relationship_data["_id"]}
                     )
                     relationship_data["--relationship_id--"] = []
                     for result in relationship_result:
-                        if f'{self.child_name}_id' in result:
-                            relationship_data["--relationship_id--"].append(result[f'{self.child_name}_id'])
+                        if f"{self.child_name}_id" in result:
+                            relationship_data["--relationship_id--"].append(
+                                result[f"{self.child_name}_id"]
+                            )
             # print(
             #     f'[get_relationship][relationship_data_list] -> {relationship_data_list}'
             # )
         except Exception as error:
             raise Exception(f"get_relationship method error: {error}")
 
-    def delete_relationship(self, relationship_data_list):
+    def delete_relationship(self, relationship_data_list, child_id=None):
         try:
             for relationship_data in relationship_data_list:
                 if "_id" in relationship_data:
-                    relationship_result = self.get(
-                        {
-                            f'{self.parent_name}_id': relationship_data["_id"]
-                        }
-                    )
+                    request = {f"{self.parent_name}_id": relationship_data["_id"]}
+                    if child_id:
+                        request[f"{self.child_name}_id"] = child_id
+                    relationship_result = self.get(request)
+                    relationship_data["--relationship_id--"] = []
                     for result in relationship_result:
-                        if f'{self.child_name}_id' in result:
-                            relationship_data["--relationship_id--"] = result[f'{self.child_name}_id']
+                        if f"{self.child_name}_id" in result:
+                            relationship_data["--relationship_id--"].append(
+                                result[f"{self.child_name}_id"]
+                            )
                             self.delete({"_id": result["_id"]})
             # print(
             #     f'[delete_relationship][relationship_data_list] -> {relationship_data_list}'
@@ -90,8 +89,8 @@ class Relator(object):
         try:
             return self.post(
                 {
-                    f'{self.parent_name}_id': parent_id,
-                    f'{self.child_name}_id': child_id,
+                    f"{self.parent_name}_id": parent_id,
+                    f"{self.child_name}_id": child_id,
                 }
             )
         except Exception as error:

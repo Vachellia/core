@@ -151,20 +151,25 @@ class Internal(object):
             relation = Relator(
                 self.database, parameters[1]["class_name"], self.class_instance_name
             )
-            relation.delete_relationship(parameters[1]["data"])
+            if "_id" in parameters[0]:
+                relation.delete_relationship(parameters[1]["data"], parameters[0]["_id"])
+            else:
+                relation.delete_relationship(parameters[1]["data"])
+            print("[relation.delete_relationship] -> ", parameters[1]["data"])
             result_list = []
             for relationship_data in parameters[1]["data"]:
                 if "--relationship_id--" in relationship_data:
-                    if relationship_data["--relationship_id--"] == parameters[0]["_id"]:
-                        result = self.database_collection.delete_one(
-                            {"_id": ObjectId(parameters[0]["_id"])}
-                        )
-                        if result.deleted_count > 0:
-                            result_list.append({"_id": parameters[0]["_id"]})
-                        del relationship_data["--relationship_id--"]
-                    else:
-                        pass
-                        # TODO: allow put on unspecified id
+                    for relationship_id in relationship_data["--relationship_id--"]:
+                        if relationship_id == parameters[0]["_id"]:
+                            result = self.database_collection.delete_one(
+                                {"_id": ObjectId(parameters[0]["_id"])}
+                            )
+                            if result.deleted_count > 0:
+                                result_list.append({"_id": parameters[0]["_id"]})
+                            del relationship_data["--relationship_id--"]
+                        else:
+                            pass
+                            # TODO: allow put on unspecified id
 
             return {
                 "status": "success",
